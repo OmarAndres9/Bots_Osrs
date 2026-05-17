@@ -1,38 +1,31 @@
-"""
-bot_manager.py — Gestor central de bots
-=========================================
-Registra todos los bots disponibles y expone
-métodos simples para la UI: start, stop, estado.
-"""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "bots"))
 
 from bots.agility_bot import AgilityBot
-# Para agregar un bot nuevo:
-#   from bots.fishing_bot import FishingBot
-#   from bots.mining_bot  import MiningBot
+from bots.courses import ALL_COURSES
+from bots.gotr_bot import GuardiansOfTheRiftBot
+from bots.fishing_bot import FishingBot, FISHING_SPOTS
+from bots.mining_bot import MiningBot, MINING_SPOTS
 
 
 class BotManager:
-    """
-    Registro central de todos los bots disponibles.
-
-    Para agregar un bot nuevo:
-        1. Crea el archivo en bots/mi_bot.py heredando BaseBot
-        2. Importa la clase arriba
-        3. Agrégala a self.bots en __init__
-    """
 
     def __init__(self):
-        self.bots = {
-            "Agility — Gnome Stronghold": AgilityBot(),
-            # "Fishing — Barbarian Village": FishingBot(),
-            # "Mining — Motherlode Mine":    MiningBot(),
-        }
+        self.bots = {}
+
+        for key, course in ALL_COURSES.items():
+            self.bots[f"Agilidad — {course.name}"] = AgilityBot(course)
+
+        for spot in FISHING_SPOTS:
+            self.bots[f"Pesca — {spot['name']}"] = FishingBot(spot)
+
+        for spot in MINING_SPOTS:
+            self.bots[f"Minería — {spot['name']}"] = MiningBot(spot)
+
+        self.bots["Guardians of the Rift"] = GuardiansOfTheRiftBot()
 
     def nombres(self) -> list[str]:
-        """Lista de nombres para el selector de la UI."""
         return list(self.bots.keys())
 
     def iniciar(self, nombre: str, log_callback=None):
