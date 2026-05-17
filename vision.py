@@ -119,3 +119,59 @@ def click_humano(x: int, y: int):
     mover_bezier(x + dx, y + dy)
     time.sleep(random.uniform(0.04, 0.12))  # pausa natural antes de clickear
     pyautogui.click()
+
+
+# ──────────────────────────────────────────
+# Utilidad para soltar items (drop)
+# ──────────────────────────────────────────
+
+def drop_items(item_template: str | Path, confianza: float = CONFIANZA_MINIMA) -> int:
+    """
+    Busca items en pantalla y los suelta con Shift+Click.
+
+    Requiere tener 'Shift dropping' activado en RuneLite.
+    Retorna la cantidad de items soltados.
+    """
+    count = 0
+    for _ in range(28):
+        coords = buscar_template(item_template, confianza)
+        if coords is None:
+            break
+        x, y = coords
+        mover_bezier(x, y)
+        pyautogui.keyDown("shift")
+        pyautogui.click()
+        time.sleep(random.uniform(0.03, 0.08))
+        pyautogui.keyUp("shift")
+        count += 1
+        time.sleep(random.uniform(0.05, 0.12))
+    return count
+
+
+def drop_items_derecho(item_template: str | Path, confianza: float = CONFIANZA_MINIMA) -> int:
+    """
+    Busca items en pantalla y los suelta con Click Derecho → 'Drop'.
+
+    No necesita RuneLite shift-drop. Usa template matching
+    para encontrar la opción 'Drop' en el menú contextual.
+    """
+    drop_template = Path("templates/drop_option.png")
+    count = 0
+    for _ in range(28):
+        coords = buscar_template(item_template, confianza)
+        if coords is None:
+            break
+        x, y = coords
+        mover_bezier(x, y)
+        pyautogui.rightClick()
+        time.sleep(random.uniform(0.08, 0.15))
+
+        drop_coords = buscar_template(drop_template, confianza=0.85)
+        if drop_coords:
+            click_humano(*drop_coords)
+            count += 1
+            time.sleep(random.uniform(0.05, 0.12))
+        else:
+            pyautogui.click()  # cerrar menú
+            break
+    return count
